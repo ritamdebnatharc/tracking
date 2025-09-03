@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Ecommerce Store - With Promo Code Feature</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+
+    <style>
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .promo-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .promo-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Practice Store</h1>
+                <div class="flex items-center space-x-4">
+                    <a href="#" onclick="showPage('home')" class="hover:text-gray-200">Home</a>
+                    <a href="#" onclick="showPage('cart')" class="hover:text-gray-200 flex items-center">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart (<span id="cart-count">0</span>)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Homepage -->
+    <div id="home-page" class="page">
+        <div class="container mx-auto px-4 py-8">
+            <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">Featured Products</h2>
+            <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Products will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Page -->
+    <div id="product-detail-page" class="page hidden">
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="md:flex">
+                    <div class="md:w-1/2">
+                        <img id="product-detail-image" src="" alt="" class="w-full h-96 object-cover">
+                    </div>
+                    <div class="md:w-1/2 p-8">
+                        <h1 id="product-detail-name" class="text-3xl font-bold mb-4 text-gray-800"></h1>
+                        <p id="product-detail-price" class="text-2xl font-semibold text-purple-600 mb-4"></p>
+                        <p id="product-detail-description" class="text-gray-600 mb-6"></p>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                            <div class="flex items-center space-x-3">
+                                <button onclick="updateQuantity(-1)" class="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300">-</button>
+                                <input type="number" id="product-quantity" value="1" min="1" class="w-16 text-center border border-gray-300 rounded px-2 py-1">
+                                <button onclick="updateQuantity(1)" class="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <button onclick="addToCart()" class="btn-primary text-white px-8 py-3 rounded-lg font-semibold w-full">
+                                <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                            </button>
+                            <button onclick="showPage('home')" class="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-semibold w-full hover:bg-gray-300">
+                                <i class="fas fa-arrow-left mr-2"></i>Back to Products
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Page -->
+    <div id="cart-page" class="page hidden">
+        <div class="container mx-auto px-4 py-8">
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">Shopping Cart</h2>
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div id="cart-items">
+                    <!-- Cart items will be populated by JavaScript -->
+                </div>
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-center text-xl font-semibold">
+                        <span>Total: <span id="cart-total">$0.00</span></span>
+                        <div class="space-x-4">
+                            <button onclick="showPage('home')" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">Continue Shopping</button>
+                            <button onclick="proceedToCheckout()" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold">Proceed to Checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Page -->
+    <div id="checkout-page" class="page hidden">
+        <div class="container mx-auto px-4 py-8">
+            <h2 class="text-3xl font-bold mb-8 text-gray-800">Checkout</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Checkout Form -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <form id="checkout-form">
+                        <!-- Shipping Information -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Shipping Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                    <input type="text" id="firstName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                    <input type="text" id="lastName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input type="email" id="email" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                    <input type="text" id="address" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                    <input type="text" id="city" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+                                    <input type="text" id="zipCode" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Promo Code Section -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Promo Code</h3>
+                            <div class="flex space-x-3">
+                                <input type="text" id="promoCode" placeholder="Enter promo code" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <button type="button" onclick="applyPromoCode()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
+                                    Apply
+                                </button>
+                            </div>
+                            <div id="promo-message" class="mt-2 p-2 rounded hidden"></div>
+                            <div class="mt-2 text-sm text-gray-600">
+                                <p><strong>Available codes:</strong></p>
+                                <ul class="list-disc list-inside">
+                                    <li>SAVE10 - 10% off</li>
+                                    <li>SAVE20 - 20% off</li>
+                                    <li>FIXED15 - $15 off</li>
+                                    <li>WELCOME - 15% off</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Payment Information -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800">Payment Information</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                                        <input type="text" id="expiryDate" placeholder="MM/YY" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                                        <input type="text" id="cvv" placeholder="123" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg font-semibold w-full">
+                            <i class="fas fa-credit-card mr-2"></i>Place Order
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Order Summary</h3>
+                    <div id="checkout-items" class="space-y-4 mb-6">
+                        <!-- Order items will be populated by JavaScript -->
+                    </div>
+                    <div class="border-t border-gray-200 pt-4 space-y-2">
+                        <div class="flex justify-between">
+                            <span>Subtotal:</span>
+                            <span id="checkout-subtotal">$0.00</span>
+                        </div>
+                        <div id="promo-discount-line" class="flex justify-between text-green-600 hidden">
+                            <span>Promo Discount (<span id="applied-promo-code"></span>):</span>
+                            <span id="promo-discount-amount">-$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Shipping:</span>
+                            <span id="checkout-shipping">$5.99</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Tax:</span>
+                            <span id="checkout-tax">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-semibold border-t border-gray-200 pt-2">
+                            <span>Total:</span>
+                            <span id="checkout-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thank You Page -->
+    <div id="thank-you-page" class="page hidden">
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <div class="mb-8">
+                    <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">Thank You for Your Order!</h2>
+                    <p class="text-gray-600 mb-6">Your order has been successfully placed and is being processed.</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Order Details</h3>
+                    <div class="text-left space-y-2">
+                        <p><strong>Order Number:</strong> <span id="order-number"></span></p>
+                        <p><strong>Email:</strong> <span id="confirmation-email"></span></p>
+                        <p><strong>Order Date:</strong> <span id="order-date"></span></p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Items Ordered</h3>
+                    <div id="confirmation-items" class="space-y-4">
+                        <!-- Items will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Order Summary</h3>
+                    <div class="text-left space-y-2">
+                        <div class="flex justify-between">
+                            <span>Subtotal:</span>
+                            <span id="confirmation-subtotal">$0.00</span>
+                        </div>
+                        <div id="confirmation-promo-line" class="flex justify-between text-green-600 hidden">
+                            <span>Promo Discount (<span id="confirmation-promo-code"></span>):</span>
+                            <span id="confirmation-promo-discount">-$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Shipping:</span>
+                            <span id="confirmation-shipping">$5.99</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Tax:</span>
+                            <span id="confirmation-tax">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-semibold border-t border-gray-200 pt-2">
+                            <span>Total:</span>
+                            <span id="confirmation-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startNewOrder()" class="btn-primary text-white px-8 py-3 rounded-lg font-semibold">
+                    <i class="fas fa-shopping-cart mr-2"></i>Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample products data
+        const products = [
+            {
+                id: 1,
+                name: "Wireless Headphones",
+                price: 99.99,
+                image: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400",
+                description: "High-quality wireless headphones with noise cancellation and superior sound quality. Perfect for music lovers and professionals.",
+                category: "Electronics"
+            },
+            {
+                id: 2,
+                name: "Smart Watch",
+                price: 199.99,
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+                description: "Advanced smartwatch with fitness tracking, heart rate monitor, and smartphone integration. Stay connected and healthy.",
+                category: "Electronics"
+            },
+            {
+                id: 3,
+                name: "Laptop Backpack",
+                price: 49.99,
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400",
+                description: "Durable and stylish laptop backpack with multiple compartments and water-resistant material. Perfect for work and travel.",
+                category: "Accessories"
+            },
+            {
+                id: 4,
+                name: "Coffee Maker",
+                price: 79.99,
+                image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400",
+                description: "Premium coffee maker with programmable settings and thermal carafe. Brew the perfect cup every time.",
+                category: "Home & Kitchen"
+            },
+            {
+                id: 5,
+                name: "Bluetooth Speaker",
+                price: 39.99,
+                image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400",
+                description: "Portable Bluetooth speaker with rich sound and long battery life. Take your music anywhere.",
+                category: "Electronics"
+            },
+            {
+                id: 6,
+                name: "Yoga Mat",
+                price: 29.99,
+                image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400",
+                description: "Premium yoga mat with excellent grip and cushioning. Perfect for all types of yoga and exercise.",
+                category: "Sports & Fitness"
+            }
+        ];
+
+        // Promo codes with different types and values
+        const promoCodes = {
+            'SAVE10': { type: 'percentage', value: 10, description: '10% off' },
+            'SAVE20': { type: 'percentage', value: 20, description: '20% off' },
+            'FIXED15': { type: 'fixed', value: 15, description: '$15 off' },
+            'WELCOME': { type: 'percentage', value: 15, description: '15% off' }
+        };
+
+        // Global variables
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let currentProduct = null;
+        let appliedPromoCode = null;
+        let promoDiscount = 0;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            showPage('home');
+            updateCartCount();
+            renderProducts();
+            
+            // Track view_item_list event for homepage
+            trackEvent('view_item_list', {
+                item_list_id: 'homepage_products',
+                item_list_name: 'Homepage Products',
+                items: products.map(product => ({
+                    item_id: product.id.toString(),
+                    item_name: product.name,
+                    category: product.category,
+                    price: product.price
+                }))
+            });
+
+            // Checkout form submission
+            document.getElementById('checkout-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                placeOrder();
+            });
+        });
+
+        // Track GA4 events
+        function trackEvent(eventName, parameters) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', eventName, parameters);
+            }
+            
+            // Also push to dataLayer for debugging
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: eventName,
+                ...parameters
+            });
+        }
+
+        // Show/hide pages
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.getElementById(pageName + '-page').classList.remove('hidden');
+
+            if (pageName === 'cart') {
+                renderCart();
+                trackEvent('view_cart', {
+                    currency: 'USD',
+                    value: getCartTotal(),
+                    items: cart.map(item => ({
+                        item_id: item.id.toString(),
+                        item_name: item.name,
+                        category: item.category,
+                        quantity: item.quantity,
+                        price: item.price
+                    }))
+                });
+            } else if (pageName === 'checkout') {
+                renderCheckoutSummary();
+                trackEvent('begin_checkout', {
+                    currency: 'USD',
+                    value: getCartTotal(),
+                    items: cart.map(item => ({
+                        item_id: item.id.toString(),
+                        item_name: item.name,
+                        category: item.category,
+                        quantity: item.quantity,
+                        price: item.price
+                    }))
+                });
+            }
+        }
+
+        // Render products grid
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-800">${product.name}</h3>
+                        <p class="text-2xl font-bold text-purple-600 mb-4">$${product.price.toFixed(2)}</p>
+                        <button onclick="viewProduct(${product.id})" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold w-full">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // View product details
+        function viewProduct(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            if (currentProduct) {
+                document.getElementById('product-detail-image').src = currentProduct.image;
+                document.getElementById('product-detail-name').textContent = currentProduct.name;
+                document.getElementById('product-detail-price').textContent = `$${currentProduct.price.toFixed(2)}`;
+                document.getElementById('product-detail-description').textContent = currentProduct.description;
+                document.getElementById('product-quantity').value = 1;
+                
+                showPage('product-detail');
+                
+                // Track view_item event
+                trackEvent('view_item', {
+                    currency: 'USD',
+                    value: currentProduct.price,
+                    items: [{
+                        item_id: currentProduct.id.toString(),
+                        item_name: currentProduct.name,
+                        category: currentProduct.category,
+                        price: currentProduct.price
+                    }]
+                });
+            }
+        }
+
+        // Update quantity
+        function updateQuantity(change) {
+            const quantityInput = document.getElementById('product-quantity');
+            let newQuantity = parseInt(quantityInput.value) + change;
+            if (newQuantity < 1) newQuantity = 1;
+            quantityInput.value = newQuantity;
+        }
+
+        // Add to cart
+        function addToCart() {
+            if (!currentProduct) return;
+            
+            const quantity = parseInt(document.getElementById('product-quantity').value);
+            const existingItem = cart.find(item => item.id === currentProduct.id);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    price: currentProduct.price,
+                    image: currentProduct.image,
+                    category: currentProduct.category,
+                    quantity: quantity
+                });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            
+            // Track add_to_cart event
+            trackEvent('add_to_cart', {
+                currency: 'USD',
+                value: currentProduct.price * quantity,
+                items: [{
+                    item_id: currentProduct.id.toString(),
+                    item_name: currentProduct.name,
+                    category: currentProduct.category,
+                    quantity: quantity,
+                    price: currentProduct.price
+                }]
+            });
+            
+            alert('Product added to cart!');
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        // Render cart
+        function renderCart() {
+            const cartItems = document.getElementById('cart-items');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-600 text-center py-8">Your cart is empty</p>';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between border-b border-gray-200 py-4">
+                        <div class="flex items-center space-x-4">
+                            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">${item.name}</h4>
+                                <p class="text-gray-600">$${item.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateCartItemQuantity(${item.id}, -1)" class="bg-gray-200 text-gray-800 px-2 py-1 rounded hover:bg-gray-300">-</button>
+                                <span class="px-3">${item.quantity}</span>
+                                <button onclick="updateCartItemQuantity(${item.id}, 1)" class="bg-gray-200 text-gray-800 px-2 py-1 rounded hover:bg-gray-300">+</button>
+                            </div>
+                            <button onclick="removeFromCart(${item.id})" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            updateCartTotal();
+        }
+
+        // Update cart item quantity
+        function updateCartItemQuantity(itemId, change) {
+            const item = cart.find(item => item.id === itemId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(itemId);
+                } else {
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCart();
+                    updateCartCount();
+                }
+            }
+        }
+
+        // Remove from cart
+        function removeFromCart(itemId) {
+            const itemToRemove = cart.find(item => item.id === itemId);
+            cart = cart.filter(item => item.id !== itemId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Track remove_from_cart event
+            if (itemToRemove) {
+                trackEvent('remove_from_cart', {
+                    currency: 'USD',
+                    value: itemToRemove.price * itemToRemove.quantity,
+                    items: [{
+                        item_id: itemToRemove.id.toString(),
+                        item_name: itemToRemove.name,
+                        category: itemToRemove.category,
+                        quantity: itemToRemove.quantity,
+                        price: itemToRemove.price
+                    }]
+                });
+            }
+            
+            renderCart();
+            updateCartCount();
+        }
+
+        // Get cart total
+        function getCartTotal() {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+
+        // Update cart total display
+        function updateCartTotal() {
+            const total = getCartTotal();
+            document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Proceed to checkout
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            showPage('checkout');
+        }
+
+        // Apply promo code
+        function applyPromoCode() {
+            const promoInput = document.getElementById('promoCode');
+            const promoCode = promoInput.value.trim().toUpperCase();
+            const messageDiv = document.getElementById('promo-message');
+            
+            if (!promoCode) {
+                showPromoMessage('Please enter a promo code.', 'error');
+                return;
+            }
+            
+            if (promoCodes[promoCode]) {
+                appliedPromoCode = promoCode;
+                const promo = promoCodes[promoCode];
+                
+                // Calculate discount
+                const subtotal = getCartTotal();
+                if (promo.type === 'percentage') {
+                    promoDiscount = subtotal * (promo.value / 100);
+                } else if (promo.type === 'fixed') {
+                    promoDiscount = Math.min(promo.value, subtotal); // Don't exceed subtotal
+                }
+                
+                showPromoMessage(`Promo code applied! ${promo.description}`, 'success');
+                updateCheckoutSummary();
+                
+                // Track promo code application
+                trackEvent('coupon_applied', {
+                    coupon_code: promoCode,
+                    coupon_value: promoDiscount,
+                    currency: 'USD'
+                });
+                
+                promoInput.disabled = true;
+                document.querySelector('button[onclick="applyPromoCode()"]').textContent = 'Applied';
+                document.querySelector('button[onclick="applyPromoCode()"]').disabled = true;
+                document.querySelector('button[onclick="applyPromoCode()"]').classList.remove('bg-green-600', 'hover:bg-green-700');
+                document.querySelector('button[onclick="applyPromoCode()"]').classList.add('bg-gray-400');
+            } else {
+                showPromoMessage('Invalid promo code. Please try again.', 'error');
+                appliedPromoCode = null;
+                promoDiscount = 0;
+                updateCheckoutSummary();
+            }
+        }
+
+        // Show promo message
+        function showPromoMessage(message, type) {
+            const messageDiv = document.getElementById('promo-message');
+            messageDiv.textContent = message;
+            messageDiv.className = `mt-2 p-2 rounded ${type === 'success' ? 'promo-success' : 'promo-error'}`;
+            messageDiv.classList.remove('hidden');
+        }
+
+        // Render checkout summary
+        function renderCheckoutSummary() {
+            const itemsDiv = document.getElementById('checkout-items');
+            itemsDiv.innerHTML = cart.map(item => `
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded">
+                        <div>
+                            <h4 class="font-medium text-gray-800">${item.name}</h4>
+                            <p class="text-sm text-gray-600">Qty: ${item.quantity}</p>
+                        </div>
+                    </div>
+                    <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+            `).join('');
+            
+            updateCheckoutSummary();
+        }
+
+        // Update checkout summary
+        function updateCheckoutSummary() {
+            const subtotal = getCartTotal();
+            const shipping = 5.99;
+            const tax = (subtotal - promoDiscount + shipping) * 0.08; // 8% tax
+            const total = subtotal - promoDiscount + shipping + tax;
+            
+            document.getElementById('checkout-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('checkout-shipping').textContent = `$${shipping.toFixed(2)}`;
+            document.getElementById('checkout-tax').textContent = `$${tax.toFixed(2)}`;
+            document.getElementById('checkout-total').textContent = `$${total.toFixed(2)}`;
+            
+            // Show/hide promo discount line
+            const promoLine = document.getElementById('promo-discount-line');
+            if (appliedPromoCode && promoDiscount > 0) {
+                promoLine.classList.remove('hidden');
+                document.getElementById('applied-promo-code').textContent = appliedPromoCode;
+                document.getElementById('promo-discount-amount').textContent = `-$${promoDiscount.toFixed(2)}`;
+            } else {
+                promoLine.classList.add('hidden');
+            }
+        }
+
+        // Place order
+        function placeOrder() {
+            const orderNumber = 'ORD-' + Date.now().toString().slice(-8);
+            const orderDate = new Date().toLocaleDateString();
+            const email = document.getElementById('email').value;
+            
+            // Calculate order totals
+            const subtotal = getCartTotal();
+            const shipping = 5.99;
+            const tax = (subtotal - promoDiscount + shipping) * 0.08;
+            const total = subtotal - promoDiscount + shipping + tax;
+            
+            // Track purchase event
+            trackEvent('purchase', {
+                transaction_id: orderNumber,
+                value: total,
+                currency: 'USD',
+                items: cart.map(item => ({
+                    item_id: item.id.toString(),
+                    item_name: item.name,
+                    category: item.category,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                shipping: shipping,
+                tax: tax,
+                coupon: appliedPromoCode || undefined
+            });
+            
+            // Store order details for confirmation page
+            localStorage.setItem('lastOrder', JSON.stringify({
+                orderNumber,
+                orderDate,
+                email,
+                items: cart,
+                subtotal,
+                promoCode: appliedPromoCode,
+                promoDiscount,
+                shipping,
+                tax,
+                total
+            }));
+            
+            // Clear cart and show thank you page
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            
+            showThankYouPage();
+        }
+
+        // Show thank you page
+        function showThankYouPage() {
+            const order = JSON.parse(localStorage.getItem('lastOrder'));
+            
+            if (order) {
+                document.getElementById('order-number').textContent = order.orderNumber;
+                document.getElementById('confirmation-email').textContent = order.email;
+                document.getElementById('order-date').textContent = order.orderDate;
+                
+                // Render ordered items
+                const itemsDiv = document.getElementById('confirmation-items');
+                itemsDiv.innerHTML = order.items.map(item => `
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-3">
+                            <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded">
+                            <div>
+                                <h4 class="font-medium text-gray-800">${item.name}</h4>
+                                <p class="text-sm text-gray-600">Qty: ${item.quantity} × $${item.price.toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('');
+                
+                // Update order summary
+                document.getElementById('confirmation-subtotal').textContent = `$${order.subtotal.toFixed(2)}`;
+                document.getElementById('confirmation-shipping').textContent = `$${order.shipping.toFixed(2)}`;
+                document.getElementById('confirmation-tax').textContent = `$${order.tax.toFixed(2)}`;
+                document.getElementById('confirmation-total').textContent = `$${order.total.toFixed(2)}`;
+                
+                // Show/hide promo code line
+                const promoLine = document.getElementById('confirmation-promo-line');
+                if (order.promoCode && order.promoDiscount > 0) {
+                    promoLine.classList.remove('hidden');
+                    document.getElementById('confirmation-promo-code').textContent = order.promoCode;
+                    document.getElementById('confirmation-promo-discount').textContent = `-$${order.promoDiscount.toFixed(2)}`;
+                } else {
+                    promoLine.classList.add('hidden');
+                }
+            }
+            
+            showPage('thank-you');
+        }
+
+        // Start new order
+        function startNewOrder() {
+            // Reset promo code state
+            appliedPromoCode = null;
+            promoDiscount = 0;
+            document.getElementById('promoCode').value = '';
+            document.getElementById('promoCode').disabled = false;
+            const applyButton = document.querySelector('button[onclick="applyPromoCode()"]');
+            applyButton.textContent = 'Apply';
+            applyButton.disabled = false;
+            applyButton.classList.remove('bg-gray-400');
+            applyButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            document.getElementById('promo-message').classList.add('hidden');
+            
+            // Reset checkout form
+            document.getElementById('checkout-form').reset();
+            
+            showPage('home');
+        }
+    </script>
+</body>
+</html>
